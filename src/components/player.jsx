@@ -18,8 +18,8 @@ export default function Player({context, audioBuffer, impulseBuffer, fxObj}){
     const inputRef = useRef();
     const rafRef = useRef();
 
-    console.log(fxObj)
-    console.log(audioBuffer)
+    // console.log(fxObj)
+    // console.log(audioBuffer)
 
     function play(index = fxObj.currIndex){
 

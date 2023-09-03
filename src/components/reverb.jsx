@@ -3,7 +3,7 @@ import '../App.css'
 
 export default function Reverb({context, audioBuffer, impulseBuffer, fxObj, currBuffer}){
     const [selectedIndex, setSelectedIndex] = useState(null);
-    const [convolverObj, setConvolverObj] = useState(null);
+    const [convolverArr, setConvolverArr] = useState([]);
     const [click, setClick] = useState([]);
 
     // console.log(fxObj)
@@ -13,14 +13,27 @@ export default function Reverb({context, audioBuffer, impulseBuffer, fxObj, curr
 
         if(fxObj.currBuffer !== null && fxObj.currBuffer !== undefined && fxObj.currSource !== null){
 
-            if(selectedIndex === value){
+            if(click.includes(value)){
+
+                console.log(value)
                 setSelectedIndex(null);
-                convolverObj.disconnect();
+
+                // convolverArr[value].disconnect();
+
+                let copy = [...convolverArr];
+                let filter = copy.filter((e) => {
+                    if(e.sel === value){
+                        e.disconnect();
+                    }
+                    return e.sel !== value
+                });
+                setConvolverArr(filter);
             }else{
-                if(fxObj.currConvolver !== null){
-                    convolverObj.disconnect();
-                }
+                // if(convolverObj !== null){
+                //     convolverObj.disconnect();
+                // }
                 const convolver = context.createConvolver();
+                convolver.sel = index;
                 const impulseResponseBuffer = impulseBuffer[value];
 
                 const wetGainNode = context.createGain();
@@ -41,7 +54,10 @@ export default function Reverb({context, audioBuffer, impulseBuffer, fxObj, curr
                 // console.log(wetGainNode);
                 // console.log(context);
 
-                setConvolverObj(convolver);
+                let copy = [...convolverArr];
+                copy.push(convolver);
+                setConvolverArr(copy);
+
                 setSelectedIndex(value);
                 fxObj.currConvolver = convolver;
             }
@@ -56,22 +72,22 @@ export default function Reverb({context, audioBuffer, impulseBuffer, fxObj, curr
         if(copy.includes(index)){
             let filter = copy.filter(e => e !== index)
             setClick(filter)
-            console.log(filter)
+            // console.log(filter)
         }else{
             copy.push(index)
             setClick(copy)
-            console.log(copy)
+            // console.log(copy)
         }
     };
 
     useEffect(()=>{
         // console.log(fxObj)
-        if(fxObj.currSource !== null && fxObj.currSource !== undefined){
-            if(convolverObj !== null){
-                fxObj.currSource.connect(convolverObj)
+        // console.log(convolverArr)
+            if(convolverArr.length > 0){
+                convolverArr.forEach((e)=> fxObj.currSource.connect(e));
             }
-        }
-    },[fxObj.currBuffer, fxObj.currSource, fxObj.isPlaying])
+        
+    },[convolverArr, fxObj.currBuffer, fxObj.currSource, fxObj.isPlaying])
 
     return (
         <div className='webapbox'>
